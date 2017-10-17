@@ -18,6 +18,12 @@ export class Point{
     return new Point([xyz[0], xyz[1], xyz[2]])
   }
 
+  manDist(p: Point){
+    return this.add(p.multiply(-1)).xyz() // this - p
+                .map(x => Math.abs(x)) // abs
+                .reduce((prev, cur) => prev + cur, 0) // sum
+  }
+
   xyz() {return [this.x,this.y,this.z]}
 
   add(p: Point): Point {
@@ -40,7 +46,12 @@ export class Point{
   }
 }
 
-export enum GameEndState { Win, Loss, Tie } 
+export interface GameEndState { 
+  tie: boolean
+  winner: Player
+  loser: Player
+  winningLine: Point[]
+} 
 
 enum Direction {  // Horizontal Layer North, East, Vertical Up
                   North, East, Up, 
@@ -182,13 +193,23 @@ export class Game {
 }
 
 function tie(game: Game) {
-  console.log("Tied game.")
-  return GameEndState.Tie
+  // console.log("Tied game.")
+  return {
+    tie: true,
+    winner: game.currentPlayer,
+    loser: game.opponent,
+    winningLine: []
+  }
 }
 
-function win(game: Game) {
-  console.log(`${game.currentPlayer.name} has won the game!`)
-  return GameEndState.Tie
+function win(game: Game, winningLine: Point[]): GameEndState {
+  // console.log(`${game.currentPlayer.name} has won the game!`)
+  return {
+    tie: false,
+    winner: game.currentPlayer,
+    loser: game.opponent,
+    winningLine: winningLine
+  }
 }
 type UpdateCallback = (g: Game) => void
 type FinishedCallback = (s: GameEndState, g: Game) => void
@@ -211,8 +232,7 @@ export function loop(game: Game,
 
         var [won, line] = game.wasWonBy(move)
         if (won) {
-          console.log(line)
-          finishedCb(win(game), game)
+          finishedCb(win(game, line), game)
         }
 
         else {
