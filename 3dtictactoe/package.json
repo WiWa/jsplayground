@@ -15,5 +15,8 @@
     "mocha": "^4.0.1",
     "ts-node": "^3.3.0",
     "typescript": "^2.5.3"
+  },
+  "dependencies": {
+    "get-a-line": "^1.0.0"
   }
 }

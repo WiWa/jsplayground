@@ -14,16 +14,18 @@ export class Point{
     this.z = z
   }
 
-  add({x,y,z}: Point): Point {
-    return new Point([this.x+x, this.y+y, this.z+z])
+  xyz() {return [this.x,this.y,this.z]}
+
+  add(p: Point): Point {
+    return new Point([this.x+p.x, this.y+p.y, this.z+p.z])
   }
   
   multiply(n: number): Point {
     return new Point([n*this.x, n*this.y, n*this.z])
   }
   
-  equals({x,y,z}: Point) {
-    return this.x == x && this.y == y && this.z == z
+  equals(p: Point) {
+    return this.x == p.x && this.y == p.y && this.z == p.z
   }
   
   isValid(){
@@ -72,15 +74,24 @@ export function getLine(p: Point, step: Point): Point[] {
 export class Board {
   tiles : Layer[]
   constructor() {
-    const line: Line = [0,0,0,0]
-    const layer: Layer = [line, line, line, line]
-    this.tiles = [layer, layer, layer, layer]
+    function line(): Line {return [0,0,0,0]}
+    function layer(): Layer {return [line(), line(), line(), line()]}
+    this.tiles = [layer(), layer(), layer(), layer()]
   }
-  get({x,y,z}: Point) {
-    return this.tiles[x][y][z]
+  get(pt: Point) {
+    return this.tiles[pt.x][pt.y][pt.z]
   }
-  set(p: Player, {x,y,z}: Point) {
-    this.tiles[x][y][z] = p.num
+  set(p: Player, pt: Point) {
+    this.tiles[pt.x][pt.y][pt.z] = p.num
+  }
+  isFull(): Boolean {
+    var zeroDoesntExist = true
+    this.tiles.forEach(layer => 
+      layer.forEach(line => 
+        line.forEach(t => { 
+          if (t == 0) zeroDoesntExist = false
+        })))
+    return zeroDoesntExist
   }
 }
 
@@ -94,15 +105,18 @@ export class Player {
 }
 
 export class Game {
-  constructor(public board: Board, 
-              public unset: Set<Point>, 
-              public currentPlayer: Player, 
-              public opponent: Player) { }
+  constructor(public currentPlayer: Player, 
+              public opponent: Player,
+              public board: Board = new Board()) { }
 
   makeMove(move: Point): Game {
+    // console.log(move, this.board.tiles)
+    // console.log(this.board.tiles[0])
+    // console.log(this.board.tiles[0][0])
+    // console.log(this.board.tiles[0][0][0])
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move}!`)
-    this.unset.delete(move)
+    console.log(`Setting ${move.xyz()} to ${this.currentPlayer.num}`)
     this.board.set(this.currentPlayer, move)
     return this
   }
@@ -136,7 +150,7 @@ function win(game: Game) {
 }
 
 export function loop(game: Game): [GameEndState, Game] {
-  if (game.unset.size == 0) return [tie(game), game]
+  if (game.board.isFull()) return [tie(game), game]
   const move: Point = game.currentPlayer.getMove(game.board)
   game.makeMove(move)
   if (game.wasWonBy(move)) return [win(game), game]
