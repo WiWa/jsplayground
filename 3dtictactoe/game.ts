@@ -2,9 +2,39 @@
 type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
 type Line = Tile[]
 type Layer = Line[]
-type Point = [number, number, number]
+export type Coordinates = [number, number, number]
 
-enum GameEndState { Win, Loss, Tie } 
+export class Point{
+  x: number
+  y: number
+  z: number
+  constructor([x,y,z]: Coordinates){
+    this.x = x
+    this.y = y
+    this.z = z
+  }
+
+  add({x,y,z}: Point): Point {
+    return new Point([this.x+x, this.y+y, this.z+z])
+  }
+  
+  multiply(n: number): Point {
+    return new Point([n*this.x, n*this.y, n*this.z])
+  }
+  
+  equals({x,y,z}: Point) {
+    return this.x == x && this.y == y && this.z == z
+  }
+  
+  isValid(){
+    for (var x of [this.x, this.y, this.z]) { 
+      if (x < 0 || x > 3) return false 
+    }
+    return true
+  }
+}
+
+export enum GameEndState { Win, Loss, Tie } 
 
 enum Direction {  // Horizontal Layer North, East, Vertical Up
                   North, East, Up, 
@@ -19,59 +49,42 @@ enum Direction {  // Horizontal Layer North, East, Vertical Up
 // The "Points" on the right correspond to the direction of the step
 // i.e. To go up from [x,y,z], we add [0,0,1] (and subtract to go down)
 const directionslist: [Direction, Point][] = [
-  [Direction.Up, [0, 0, 1]],
-  [Direction.North, [0, 1, 0]],
-  [Direction.East, [1, 0, 0]],
-  [Direction.NorthWest, [1, -1, 0]],
-  [Direction.NorthEast, [1, 1, 0]],
-  [Direction.NWDiag, [-1, 1, 1]],
-  [Direction.NEDiag, [1, 1, 1]],
-  [Direction.SEDiag, [1, -1, 1]],
-  [Direction.SWDiag, [-1, -1, 1]],
+  [Direction.Up, new Point([0, 0, 1])],
+  [Direction.North, new Point([0, 1, 0])],
+  [Direction.East, new Point([1, 0, 0])],
+  [Direction.NorthWest, new Point([1, -1, 0])],
+  [Direction.NorthEast, new Point([1, 1, 0])],
+  [Direction.NWDiag, new Point([-1, 1, 1])],
+  [Direction.NEDiag, new Point([1, 1, 1])],
+  [Direction.SEDiag, new Point([1, -1, 1])],
+  [Direction.SWDiag, new Point([-1, -1, 1])],
 ]
 const directions = new Map<Direction, Point>(directionslist)
 
-function addXYZ([ax,ay,az]: Point, [bx,by,bz]: Point): Point {
-  const newpoint: Point = [ax+bx, ay+by, az+bz]
-  if(!validPoint(newpoint)) throw new Error(
-    `Cannot add ${[ax,ay,az]} and ${[ax,ay,az]} = ${newpoint}.
-      Coordinates must be between 0 and 3 inclusive.`
-  )
-  return newpoint
-}
 
-function multiplyXYZ(n: number, [x,y,z]: Point): Point {
-  return [n*x, n*y, n*z]
-}
-
-function validPoint(p: Point){
-  for (var x of p) { if (x < 0 || x > 3) return false }
-  return true
-}
-
-function getLine(p: Point, step: Point): Point[] {
-  var points = [-2,-1,1,2].map(i => addXYZ(p, multiplyXYZ(i, step)))
-                          .filter(newp => validPoint(newp))
+export function getLine(p: Point, step: Point): Point[] {
+  var points = [-3, -2, -1, 1, 2, 3].map(i => p.add(step.multiply(i)))
+                          .filter(newp => newp.isValid())
   points.push(p)
   return points
 }
 
-class Board {
+export class Board {
   tiles : Layer[]
   constructor() {
     const line: Line = [0,0,0,0]
     const layer: Layer = [line, line, line, line]
     this.tiles = [layer, layer, layer, layer]
   }
-  get([x,y,z]: Point) {
+  get({x,y,z}: Point) {
     return this.tiles[x][y][z]
   }
-  set(p: Player, [x,y,z]: Point) {
+  set(p: Player, {x,y,z}: Point) {
     this.tiles[x][y][z] = p.num
   }
 }
 
-class Player {
+export class Player {
   constructor(public getMove: (b: Board) => Point, 
               public num: 1 | 2, public name?: string) {
     if (name == null) {
@@ -80,7 +93,7 @@ class Player {
   }
 }
 
-class Game {
+export class Game {
   constructor(public board: Board, 
               public unset: Set<Point>, 
               public currentPlayer: Player, 
@@ -94,9 +107,9 @@ class Game {
     return this
   }
 
-  wasWonBy([x,y,z]: Point): Boolean {
+  wasWonBy(move: Point): Boolean {
     directions.forEach(step => {
-      var line = getLine([x,y,z], step)
+      var line = getLine(move, step)
       var inarow = line.filter((p) => 
                               this.board.get(p) == this.currentPlayer.num)
       if (inarow.length == 4) return true
@@ -122,7 +135,7 @@ function win(game: Game) {
   return GameEndState.Tie
 }
 
-function loop(game: Game): [GameEndState, Game] {
+export function loop(game: Game): [GameEndState, Game] {
   if (game.unset.size == 0) return [tie(game), game]
   const move: Point = game.currentPlayer.getMove(game.board)
   game.makeMove(move)
