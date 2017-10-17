@@ -95,8 +95,11 @@ export class Board {
   }
 }
 
+export type GetMoveFunction = (b: Board, cb: ReadPointFunction) => void
+export type ReadPointFunction = (x: Point) => void
+
 export class Player {
-  constructor(public getMove: (b: Board) => Point, 
+  constructor(public getMove: GetMoveFunction, 
               public num: 1 | 2, public name?: string) {
     if (name == null) {
       this.name = `Player ${num}` 
@@ -149,11 +152,16 @@ function win(game: Game) {
   console.log(`${game.currentPlayer.name} has won the game!`)
   return GameEndState.Tie
 }
-
-export function loop(game: Game): [GameEndState, Game] {
-  if (game.board.isFull()) return [tie(game), game]
-  const move: Point = game.currentPlayer.getMove(game.board)
-  game.makeMove(move)
-  if (game.wasWonBy(move)) return [win(game), game]
-  return loop(game.swapPlayers())
+type UpdateCallback = (g: Game) => void
+type FinishedCallback = (s: GameEndState, g: Game) => void
+export function loop(game: Game, 
+                      updateCb: UpdateCallback,
+                      finishedCb: FinishedCallback): void {
+  if (game.board.isFull()) finishedCb(tie(game), game)
+  game.currentPlayer.getMove(game.board, (move) => {
+    game.makeMove(move)
+    updateCb(game)
+    if (game.wasWonBy(move)) finishedCb(win(game), game)
+    else loop(game.swapPlayers(), updateCb, finishedCb)
+  })
 }
