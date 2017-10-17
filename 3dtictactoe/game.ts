@@ -86,11 +86,12 @@ class Game {
               public currentPlayer: Player, 
               public opponent: Player) { }
 
-  makeMove(move: Point): void {
+  makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move}!`)
     this.unset.delete(move)
     this.board.set(this.currentPlayer, move)
+    return this
   }
 
   wasWonBy([x,y,z]: Point): Boolean {
@@ -101,6 +102,13 @@ class Game {
       if (inarow.length == 4) return true
     })
     return false
+  }
+
+  swapPlayers(): Game {
+    const previousPlayer = this.currentPlayer
+    this.opponent = previousPlayer
+    this.currentPlayer = this.opponent
+    return this
   }
 }
 
@@ -119,5 +127,5 @@ function loop(game: Game): [GameEndState, Game] {
   const move: Point = game.currentPlayer.getMove(game.board)
   game.makeMove(move)
   if (game.wasWonBy(move)) return [win(game), game]
-  return loop(game)
+  return loop(game.swapPlayers())
 }
