@@ -14,6 +14,10 @@ export class Point{
     this.z = z
   }
 
+  static from(xyz: number[]){
+    return new Point([xyz[0], xyz[1], xyz[2]])
+  }
+
   xyz() {return [this.x,this.y,this.z]}
 
   add(p: Point): Point {
@@ -79,7 +83,10 @@ export class Board {
     this.tiles = [layer(), layer(), layer(), layer()]
   }
   get(pt: Point) {
-    return this.tiles[pt.x][pt.y][pt.z]
+    return this.getXYZ(pt.x,pt.y,pt.z)
+  }
+  getXYZ(x: number, y: number, z: number){
+    return this.tiles[x][y][z]
   }
   set(p: Player, pt: Point) {
     this.tiles[pt.x][pt.y][pt.z] = p.num
@@ -92,6 +99,20 @@ export class Board {
           if (t == 0) zeroDoesntExist = false
         })))
     return zeroDoesntExist
+  }
+  print(): void {
+    process.stdout.write("\n")
+    for (var y of [0,1,2,3]){
+      process.stdout.write("[ ")
+      for (var z of [0,1,2,3]){
+        for (var x of [0,1,2,3]){
+          process.stdout.write(this.getXYZ(x,y,z).toString())
+          process.stdout.write(" | ")
+        }
+      }
+      process.stdout.write(" ]\n")
+    }
+    process.stdout.write("\n")
   }
 }
 
@@ -113,12 +134,13 @@ export class Game {
               public board: Board = new Board()) { }
 
   makeMove(move: Point): Game {
+    console.log(move)
     // console.log(move, this.board.tiles)
     // console.log(this.board.tiles[0])
     // console.log(this.board.tiles[0][0])
     // console.log(this.board.tiles[0][0][0])
     if (this.board.get(move) != 0) throw new Error(
-      `${this.currentPlayer.name} tried to set already-set tile at ${move}!`)
+      `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
     console.log(`Setting ${move.xyz()} to ${this.currentPlayer.num}`)
     this.board.set(this.currentPlayer, move)
     return this
@@ -157,11 +179,19 @@ type FinishedCallback = (s: GameEndState, g: Game) => void
 export function loop(game: Game, 
                       updateCb: UpdateCallback,
                       finishedCb: FinishedCallback): void {
+                        
   if (game.board.isFull()) finishedCb(tie(game), game)
-  game.currentPlayer.getMove(game.board, (move) => {
-    game.makeMove(move)
-    updateCb(game)
-    if (game.wasWonBy(move)) finishedCb(win(game), game)
-    else loop(game.swapPlayers(), updateCb, finishedCb)
-  })
+
+  game.currentPlayer.getMove(game.board, 
+    (move) => {
+      game.makeMove(move)
+      updateCb(game)
+      if (game.wasWonBy(move)) {
+        finishedCb(win(game), game)
+      }
+      else {
+        game.swapPlayers()
+        loop(game, updateCb, finishedCb)
+      }
+    })
 }
