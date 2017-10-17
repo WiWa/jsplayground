@@ -24,13 +24,11 @@ export function humanTerminalPlayer(num: 1 | 2, name?: string): Player {
                                     .map(s => Number(s))
       if (inputCoordinates.length != 3) {
         console.log(`Input is wrong: ${line}`)
-        console.log(`Try again:`)
         getMoveFromTerminal(b, inputCallback)
       } else {
-        console.log("wtf")
         inputCallback(Point.from(inputCoordinates))
       }
     })
   }
-  return new Player(getMoveFromTerminal, num, name)
+  return new Player(getMoveFromTerminal, num, name, () => rl.close())
 }

@@ -101,16 +101,19 @@ export class Board {
     return zeroDoesntExist
   }
   print(): void {
+    const horizontals = Array(65).fill("-").join("")
     process.stdout.write("\n")
     for (var y of [0,1,2,3]){
       process.stdout.write("[ ")
       for (var z of [0,1,2,3]){
         for (var x of [0,1,2,3]){
           process.stdout.write(this.getXYZ(x,y,z).toString())
-          process.stdout.write(" | ")
+          if (x < 3) process.stdout.write(" | ")
         }
+        if (z < 3) process.stdout.write("  :  ")
       }
       process.stdout.write(" ]\n")
+      if (y < 3) process.stdout.write(`${horizontals}\n`)
     }
     process.stdout.write("\n")
   }
@@ -121,7 +124,8 @@ export type ReadPointFunction = (x: Point) => void
 
 export class Player {
   constructor(public getMove: GetMoveFunction, 
-              public num: 1 | 2, public name?: string) {
+              public num: 1 | 2, public name?: string,
+              public onGameEnd?: (s:GameEndState, g: Game) => void,) {
     if (name == null) {
       this.name = `Player ${num}` 
     } 
@@ -134,11 +138,6 @@ export class Game {
               public board: Board = new Board()) { }
 
   makeMove(move: Point): Game {
-    console.log(move)
-    // console.log(move, this.board.tiles)
-    // console.log(this.board.tiles[0])
-    // console.log(this.board.tiles[0][0])
-    // console.log(this.board.tiles[0][0][0])
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
     console.log(`Setting ${move.xyz()} to ${this.currentPlayer.num}`)
