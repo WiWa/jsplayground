@@ -103,13 +103,7 @@ export class Board {
     this.tiles[pt.x][pt.y][pt.z] = p.num
   }
   isFull(): Boolean {
-    var zeroDoesntExist = true
-    this.tiles.forEach(layer => 
-      layer.forEach(line => 
-        line.forEach(t => { 
-          if (t == 0) zeroDoesntExist = false
-        })))
-    return zeroDoesntExist
+    return this.getUnsetPoints().length == 0
   }
   getAllPoints(): Point[] {
     var points: Point[] = []

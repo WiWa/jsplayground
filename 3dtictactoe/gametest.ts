@@ -42,7 +42,7 @@ describe("Manhattan Distance", () => {
 
 describe("Random Player Testing", () => {
   it('should make the right wins', () => {
-    Array(100).fill(0).map((i) => {
+    Array(100).fill(0).forEach((i) => {
       const player1 = randomPlayer(1)
       const player2 = randomPlayer(2)
       
