@@ -1,15 +1,26 @@
 
 import {Game, loop, Board, GameEndState} from './game'
-import {humanTerminalPlayer} from './players'
+import {humanTerminalPlayer, randomPlayer} from './players'
+import * as readline from 'readline'
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
 
+// const player1 = humanTerminalPlayer(rl, 1)
+// const player2 = humanTerminalPlayer(rl, 2)
+const player1 = randomPlayer(1)
+const player2 = randomPlayer(2)
 
-const human1 = humanTerminalPlayer(1)
-const human2 = humanTerminalPlayer(2)
-
-loop(new Game(human1, human2), 
-      (g: Game) => g.board.print(), 
+loop(new Game(player1, player2), 
+      (g: Game) => {
+        // g.board.print()
+      }, 
       (s: GameEndState, g: Game) => {
-        if (human1.onGameEnd) human1.onGameEnd(s, g)
-        if (human2.onGameEnd) human2.onGameEnd(s ,g)
+        g.board.print()
+        if (player1.onGameEnd) player1.onGameEnd(s, g)
+        if (player2.onGameEnd) player2.onGameEnd(s ,g)
+        rl.close()
       })

@@ -82,13 +82,13 @@ export class Board {
     function layer(): Layer {return [line(), line(), line(), line()]}
     this.tiles = [layer(), layer(), layer(), layer()]
   }
-  get(pt: Point) {
+  get(pt: Point): Tile {
     return this.getXYZ(pt.x,pt.y,pt.z)
   }
-  getXYZ(x: number, y: number, z: number){
+  getXYZ(x: number, y: number, z: number): Tile{
     return this.tiles[x][y][z]
   }
-  set(p: Player, pt: Point) {
+  set(p: Player, pt: Point): void {
     this.tiles[pt.x][pt.y][pt.z] = p.num
   }
   isFull(): Boolean {
@@ -99,6 +99,20 @@ export class Board {
           if (t == 0) zeroDoesntExist = false
         })))
     return zeroDoesntExist
+  }
+  getAllPoints(): Point[] {
+    var points: Point[] = []
+    for (var x of [0,1,2,3]){
+      for (var y of [0,1,2,3]){
+        for (var z of [0,1,2,3]){
+          points.push(new Point([x,y,z]))
+        }
+      }
+    }
+    return points
+  }
+  getUnsetPoints(): Point[] {
+    return this.getAllPoints().filter((p) => this.get(p) == 0)
   }
   print(): void {
     const horizontals = Array(65).fill("-").join("")
@@ -140,20 +154,23 @@ export class Game {
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
-    console.log(`Setting ${move.xyz()} to ${this.currentPlayer.num}`)
     this.board.set(this.currentPlayer, move)
     return this
   }
 
-  wasWonBy(move: Point): Boolean {
+  wasWonBy(move: Point): [Boolean, Point[]] {
     var won = false
+    var winningline: Point[] = []
     directions.forEach(step => {
       var line = getLine(move, step)
       var inarow = line.filter((p) => 
                               this.board.get(p) == this.currentPlayer.num)
-      if (inarow.length == 4) won = true
+      if (inarow.length == 4) {
+        won = true
+        winningline = inarow
+      }
     })
-    return won
+    return [won, winningline]
   }
 
   swapPlayers(): Game {
@@ -192,10 +209,12 @@ export function loop(game: Game,
         game.makeMove(move)
         updateCb(game)
 
-        if (game.wasWonBy(move)) {
+        var [won, line] = game.wasWonBy(move)
+        if (won) {
+          console.log(line)
           finishedCb(win(game), game)
         }
-        
+
         else {
           game.swapPlayers()
           loop(game, updateCb, finishedCb)
