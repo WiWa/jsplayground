@@ -122,19 +122,20 @@ export class Game {
   }
 
   wasWonBy(move: Point): Boolean {
+    var won = false
     directions.forEach(step => {
       var line = getLine(move, step)
       var inarow = line.filter((p) => 
                               this.board.get(p) == this.currentPlayer.num)
-      if (inarow.length == 4) return true
+      if (inarow.length == 4) won = true
     })
-    return false
+    return won
   }
 
   swapPlayers(): Game {
     const previousPlayer = this.currentPlayer
-    this.opponent = previousPlayer
     this.currentPlayer = this.opponent
+    this.opponent = previousPlayer
     return this
   }
 }
