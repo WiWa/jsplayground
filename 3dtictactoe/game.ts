@@ -183,14 +183,23 @@ export function loop(game: Game,
 
   game.currentPlayer.getMove(game.board, 
     (move) => {
-      game.makeMove(move)
-      updateCb(game)
-      if (game.wasWonBy(move)) {
-        finishedCb(win(game), game)
-      }
-      else {
-        game.swapPlayers()
+
+      if (!move.isValid()) {
+        console.log(`${move.xyz()} is not a valid move!`)
         loop(game, updateCb, finishedCb)
+      } else {
+
+        game.makeMove(move)
+        updateCb(game)
+
+        if (game.wasWonBy(move)) {
+          finishedCb(win(game), game)
+        }
+        
+        else {
+          game.swapPlayers()
+          loop(game, updateCb, finishedCb)
+        }
       }
     })
 }
