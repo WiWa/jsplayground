@@ -57,6 +57,8 @@ enum Direction {  // Horizontal Layer North, East, Vertical Up
                   North, East, Up, 
                   // NW <-> SE, NE <-> SW horizontal diagonals
                   NorthWest, NorthEast,
+                  // North and Up at the same time, etc. (vertical diagonals)
+                  NorthUp, SouthUp, WestUp, EastUp,
                   // Cube Diagonals. NWDiag = "NorthWestDiagonal"
                   // NW is the direction of the arrow going
                   // from the SE bottom corner of the cube to the top corner
@@ -71,6 +73,10 @@ const directionslist: [Direction, Point][] = [
   [Direction.East, new Point([1, 0, 0])],
   [Direction.NorthWest, new Point([1, -1, 0])],
   [Direction.NorthEast, new Point([1, 1, 0])],
+  [Direction.NorthUp, new Point([0, 1, 1])],
+  [Direction.SouthUp, new Point([0, -1, 1])],
+  [Direction.WestUp, new Point([-1, 0, 1])],
+  [Direction.EastUp, new Point([1, 0, 1])],
   [Direction.NWDiag, new Point([-1, 1, 1])],
   [Direction.NEDiag, new Point([1, 1, 1])],
   [Direction.SEDiag, new Point([1, -1, 1])],
