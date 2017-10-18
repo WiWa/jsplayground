@@ -266,8 +266,14 @@ function isPositiveInteger(str: string) {
   function getMoveFromUI(b: Board, inputCallback: ReadPointFunction): void {
     const handler = (event: CustomEventInit) => {
       const p = event.detail
+      const point = new Point([p.x, p.y, p.z])
       window.removeEventListener('tile-click', handler)
-      inputCallback(new Point([p.x, p.y, p.z]))
+      if (point.isValid() && b.get(point) == 0) {
+        inputCallback(point)
+      } else {
+        alert("Invalid Move!")
+        getMoveFromUI(b, inputCallback)
+      }
     }
     window.addEventListener('tile-click', handler)
   }
@@ -317,10 +323,6 @@ document.body.appendChild(boardDiv);
 
 [0,1,2,3].forEach((z) => {
   var grid = clickableGrid(4,4,function(el,row,col,i){
-    // console.log("You clicked on element:",el);
-    // console.log("You clicked on row:",row);
-    // console.log("You clicked on col:",col);
-    // console.log("You clicked on item #:",i);
     console.log(`(x,y,z) = (${row+1},${col+1},${z+1})`)
     var event = new CustomEvent('tile-click', { detail: {
       x: row, y: col, z: z}
