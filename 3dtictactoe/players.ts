@@ -27,6 +27,17 @@ export function humanTerminalPlayer(rl: readline.ReadLine, num: 1 | 2, name?: st
   return new Player(getMoveFromTerminal, num, name)
 }
 
+export function humanUIPlayer(window: Window, 
+                              num: 1 | 2, name?: string): Player {
+  function getMoveFromUI(b: Board, inputCallback: ReadPointFunction): void {
+    window.addEventListener('tile-click', (event: CustomEventInit)=>{
+      const p = event.detail
+      inputCallback(new Point([p.x, p.y, p.z]))
+    })
+  }
+  return new Player(getMoveFromUI, num, name)
+}
+
 function getRandomInt(min: number, max:number) {
   min = Math.ceil(min);
   max = Math.floor(max);
