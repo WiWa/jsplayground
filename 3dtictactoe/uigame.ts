@@ -136,18 +136,18 @@ const directions = new Map<Direction, Point>(directionslist)
   print(): void {
     const horizontals = Array(65).fill("-").join("")
     console.log()
-    for (var y of [0,1,2,3]){
+    for (var x of [0,1,2,3]){
       var line = ""
       line += ("[ ")
       for (var z of [0,1,2,3]){
-        for (var x of [0,1,2,3]){
+        for (var y of [0,1,2,3]){
           line += (this.getXYZ(x,y,z).toString())
-          if (x < 3) line += (" | ")
+          if (y < 3) line += (" | ")
         }
         if (z < 3) line += ("  :  ")
       }
       line += (" ]\n")
-      if (y < 3) line += (`${horizontals}`)
+      if (x < 3) line += (`${horizontals}`)
       console.log(line)
     }
     console.log()
