@@ -175,6 +175,7 @@ const directions = new Map<Direction, Point>(directionslist)
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
+    console.log(`${this.currentPlayer.name} sets ${move.xyz()} to ${this.currentPlayer.num}.`)
     this.board.set(this.currentPlayer, move)
     return this
   }
@@ -263,10 +264,12 @@ function isPositiveInteger(str: string) {
  function humanUIPlayer(window: Window, 
                               num: 1 | 2, name?: string): Player {
   function getMoveFromUI(b: Board, inputCallback: ReadPointFunction): void {
-    window.addEventListener('tile-click', (event: CustomEventInit)=>{
+    const handler = (event: CustomEventInit) => {
       const p = event.detail
+      window.removeEventListener('tile-click', handler)
       inputCallback(new Point([p.x, p.y, p.z]))
-    })
+    }
+    window.addEventListener('tile-click', handler)
   }
   return new Player(getMoveFromUI, num, name)
 }
@@ -342,7 +345,8 @@ const player2 = randomPlayer(2)
 
 loop(new Game(player1, player2), 
       (g: Game) => {
-        g.board.print()
+        // g.board.print()
+
       }, 
       (s: GameEndState, g: Game) => {
         g.board.print()
