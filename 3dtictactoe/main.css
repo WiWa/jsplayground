@@ -1,0 +1,38 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+.grid { 
+  margin:1em;
+  margin-left: 20px;
+  margin-right: 20px;
+  /* border-collapse:collapse; */
+  border: 1px solid red;
+  /* position: relative; */
+  width: 180px;
+  height: 160px;
+  text-align: center;
+  display: inline-table;
+}
+.gridDiv {
+  display: inline-block;
+}
+.grid td {
+    cursor:pointer;
+    width:40px; 
+    height:40px;
+    border:2px solid #ccc;
+    text-align:center;
+    font-family:sans-serif; 
+    font-size:18px;
+}
+
+#boardDiv {
+  display: inline-block;
+  text-align: center;
+  margin: auto;
+  margin-top: 5%;
+  width: 100%;
+  border: 1px solid blue;
+}
