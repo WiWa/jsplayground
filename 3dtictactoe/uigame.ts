@@ -12,66 +12,66 @@ type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
 type Line = Tile[]
 type Layer = Line[]
 
-class Point{
+class Point {
   x: number
   y: number
   z: number
-  constructor([x,y,z]: [number, number, number]){
+  constructor([x, y, z]: [number, number, number]) {
     this.x = x
     this.y = y
     this.z = z
   }
 
-  static from(xyz: number[]){
+  static from(xyz: number[]) {
     return new Point([xyz[0], xyz[1], xyz[2]])
   }
 
-  manDist(p: Point){
+  manDist(p: Point) {
     return this.add(p.multiply(-1)).xyz() // this - p
-                .map(x => Math.abs(x)) // abs
-                .reduce((prev, cur) => prev + cur, 0) // sum
+      .map(x => Math.abs(x)) // abs
+      .reduce((prev, cur) => prev + cur, 0) // sum
   }
 
-  xyz() {return [this.x,this.y,this.z]}
+  xyz() { return [this.x, this.y, this.z] }
 
   add(p: Point): Point {
-    return new Point([this.x+p.x, this.y+p.y, this.z+p.z])
+    return new Point([this.x + p.x, this.y + p.y, this.z + p.z])
   }
-  
+
   multiply(n: number): Point {
-    return new Point([n*this.x, n*this.y, n*this.z])
+    return new Point([n * this.x, n * this.y, n * this.z])
   }
-  
+
   equals(p: Point) {
     return this.x == p.x && this.y == p.y && this.z == p.z
   }
-  
-  isValid(){
-    for (var x of [this.x, this.y, this.z]) { 
-      if (x < 0 || x > 3) return false 
+
+  isValid() {
+    for (var x of [this.x, this.y, this.z]) {
+      if (x < 0 || x > 3) return false
     }
     return true
   }
 }
 
-interface GameEndState { 
+interface GameEndState {
   tie: boolean
   winner: Player
   loser: Player
   winningLine: Point[]
-} 
+}
 
 enum Direction {  // Horizontal Layer North, East, Vertical Up
-                  North, East, Up, 
-                  // NW <-> SE, NE <-> SW horizontal diagonals
-                  NorthWest, NorthEast,
-                  // North and Up at the same time, etc. (vertical diagonals)
-                  NorthUp, SouthUp, WestUp, EastUp,
-                  // Cube Diagonals. NWDiag = "NorthWestDiagonal"
-                  // NW is the direction of the arrow going
-                  // from the SE bottom corner of the cube to the top corner
-                  NWDiag, NEDiag, SEDiag, SWDiag 
-                }
+  North, East, Up,
+  // NW <-> SE, NE <-> SW horizontal diagonals
+  NorthWest, NorthEast,
+  // North and Up at the same time, etc. (vertical diagonals)
+  NorthUp, SouthUp, WestUp, EastUp,
+  // Cube Diagonals. NWDiag = "NorthWestDiagonal"
+  // NW is the direction of the arrow going
+  // from the SE bottom corner of the cube to the top corner
+  NWDiag, NEDiag, SEDiag, SWDiag
+}
 
 // The "Points" on the right correspond to the direction of the step
 // i.e. To go up from [x,y,z], we add [0,0,1] (and subtract to go down)
@@ -93,24 +93,24 @@ const directionslist: [Direction, Point][] = [
 const directions = new Map<Direction, Point>(directionslist)
 
 
- function getLine(p: Point, step: Point): Point[] {
+function getLine(p: Point, step: Point): Point[] {
   var points = [-3, -2, -1, 1, 2, 3].map(i => p.add(step.multiply(i)))
-                          .filter(newp => newp.isValid())
+    .filter(newp => newp.isValid())
   points.push(p)
   return points
 }
 
- class Board {
-  tiles : Layer[]
+class Board {
+  tiles: Layer[]
   constructor() {
-    function line(): Line {return [0,0,0,0]}
-    function layer(): Layer {return [line(), line(), line(), line()]}
+    function line(): Line { return [0, 0, 0, 0] }
+    function layer(): Layer { return [line(), line(), line(), line()] }
     this.tiles = [layer(), layer(), layer(), layer()]
   }
   get(pt: Point): Tile {
-    return this.getXYZ(pt.x,pt.y,pt.z)
+    return this.getXYZ(pt.x, pt.y, pt.z)
   }
-  getXYZ(x: number, y: number, z: number): Tile{
+  getXYZ(x: number, y: number, z: number): Tile {
     return this.tiles[x][y][z]
   }
   set(p: Player, pt: Point): void {
@@ -121,10 +121,10 @@ const directions = new Map<Direction, Point>(directionslist)
   }
   getAllPoints(): Point[] {
     var points: Point[] = []
-    for (var x of [0,1,2,3]){
-      for (var y of [0,1,2,3]){
-        for (var z of [0,1,2,3]){
-          points.push(new Point([x,y,z]))
+    for (var x of [0, 1, 2, 3]) {
+      for (var y of [0, 1, 2, 3]) {
+        for (var z of [0, 1, 2, 3]) {
+          points.push(new Point([x, y, z]))
         }
       }
     }
@@ -136,12 +136,12 @@ const directions = new Map<Direction, Point>(directionslist)
   print(): void {
     const horizontals = Array(65).fill("-").join("")
     console.log()
-    for (var x of [0,1,2,3]){
+    for (var x of [0, 1, 2, 3]) {
       var line = ""
       line += ("[ ")
-      for (var z of [0,1,2,3]){
-        for (var y of [0,1,2,3]){
-          line += (this.getXYZ(x,y,z).toString())
+      for (var z of [0, 1, 2, 3]) {
+        for (var y of [0, 1, 2, 3]) {
+          line += (this.getXYZ(x, y, z).toString())
           if (y < 3) line += (" | ")
         }
         if (z < 3) line += ("  :  ")
@@ -154,23 +154,23 @@ const directions = new Map<Direction, Point>(directionslist)
   }
 }
 
- type GetMoveFunction = (b: Board, cb: ReadPointFunction) => void
- type ReadPointFunction = (x: Point) => void
+type GetMoveFunction = (b: Board, cb: ReadPointFunction) => void
+type ReadPointFunction = (x: Point) => void
 
- class Player {
-  constructor(public getMove: GetMoveFunction, 
-              public num: 1 | 2, public name?: string,
-              public onGameEnd?: (s:GameEndState, g: Game) => void,) {
+class Player {
+  constructor(public getMove: GetMoveFunction,
+    public num: 1 | 2, public name?: string,
+    public onGameEnd?: (s: GameEndState, g: Game) => void, ) {
     if (name == null) {
-      this.name = `Player ${num}` 
-    } 
+      this.name = `Player ${num}`
+    }
   }
 }
 
- class Game {
-  constructor(public currentPlayer: Player, 
-              public opponent: Player,
-              public board: Board = new Board()) { }
+class Game {
+  constructor(public currentPlayer: Player,
+    public opponent: Player,
+    public board: Board = new Board()) { }
 
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
@@ -185,8 +185,8 @@ const directions = new Map<Direction, Point>(directionslist)
     var winningline: Point[] = []
     directions.forEach(step => {
       var line = getLine(move, step)
-      var inarow = line.filter((p) => 
-                              this.board.get(p) == this.currentPlayer.num)
+      var inarow = line.filter((p) =>
+        this.board.get(p) == this.currentPlayer.num)
       if (inarow.length == 4) {
         won = true
         winningline = inarow
@@ -224,13 +224,13 @@ function win(game: Game, winningLine: Point[]): GameEndState {
 }
 type UpdateCallback = (g: Game) => void
 type FinishedCallback = (s: GameEndState, g: Game) => void
- function loop(game: Game, 
-                      updateCb: UpdateCallback,
-                      finishedCb: FinishedCallback): void {
-                        
+function loop(game: Game,
+  updateCb: UpdateCallback,
+  finishedCb: FinishedCallback): void {
+
   if (game.board.isFull()) finishedCb(tie(game), game)
 
-  game.currentPlayer.getMove(game.board, 
+  game.currentPlayer.getMove(game.board,
     (move) => {
 
       if (!move.isValid()) {
@@ -261,16 +261,17 @@ function isPositiveInteger(str: string) {
   return String(n) === str && n >= 0;
 }
 
- function humanUIPlayer(window: Window, 
-                              num: 1 | 2, name?: string): Player {
+function humanUIPlayer(window: Window,
+  num: 1 | 2, name?: string): Player {
   function getMoveFromUI(b: Board, inputCallback: ReadPointFunction): void {
     const handler = (event: CustomEventInit) => {
       const p = event.detail
       const point = new Point([p.x, p.y, p.z])
       window.removeEventListener('tile-click', handler)
       if (point.isValid() && b.get(point) == 0) {
-        window.dispatchEvent(new CustomEvent('move-place', {detail:
-          {x:p.x, y:p.y, z:p.z, n:num}
+        window.dispatchEvent(new CustomEvent('move-place', {
+          detail:
+          { x: p.x, y: p.y, z: p.z, n: num }
         }))
         inputCallback(point)
       } else {
@@ -283,43 +284,44 @@ function isPositiveInteger(str: string) {
   return new Player(getMoveFromUI, num, name)
 }
 
-function getRandomInt(min: number, max:number) {
+function getRandomInt(min: number, max: number) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
 
- function randomPlayer(num: 1 | 2, name?: string): Player {
+function randomPlayer(num: 1 | 2, name?: string): Player {
   function getMove(b: Board, inputCallback: ReadPointFunction): void {
     const unset = b.getUnsetPoints()
     const p = unset[getRandomInt(0, unset.length)]
-    window.dispatchEvent(new CustomEvent('move-place', {detail:
-      {x:p.x, y:p.y, z:p.z, n:num}
+    window.dispatchEvent(new CustomEvent('move-place', {
+      detail:
+      { x: p.x, y: p.y, z: p.z, n: num }
     }))
-    inputCallback( p )
+    inputCallback(p)
   }
   return new Player(getMove, num, name)
 }
 
 // Actual "uigame.ts"
 
-type EventListenerCallback = (el: HTMLElement, 
-                              row: number, col: number, i: number) => void
+type EventListenerCallback = (el: HTMLElement,
+  row: number, col: number, i: number) => void
 
-function clickableGrid(rows: number, cols: number, 
-                        callback: EventListenerCallback){
-  var i=0;
+function clickableGrid(rows: number, cols: number,
+  callback: EventListenerCallback) {
+  var i = 0;
   var grid = document.createElement('table');
   grid.className = 'grid';
-  for (var r=0;r<rows;++r){
+  for (var r = 0; r < rows; ++r) {
     var tr = grid.appendChild(document.createElement('tr'));
-    for (var c=0;c<cols;++c){
+    for (var c = 0; c < cols; ++c) {
       var cell = tr.appendChild(document.createElement('td'));
       // cell.innerHTML = (++i).toString();
       cell.className = `cell-${r}-${c}`
-      cell.addEventListener('click',(function(el,r,c,i){
-        return function(){ callback(el,r,c,i); }
-       })(cell,r,c,i),false);
+      cell.addEventListener('click', (function(el, r, c, i) {
+        return function() { callback(el, r, c, i); }
+      })(cell, r, c, i), false);
     }
   }
   return grid;
@@ -329,11 +331,13 @@ const boardDiv = document.createElement('div');
 boardDiv.id = "boardDiv";
 document.body.appendChild(boardDiv);
 
-[0,1,2,3].forEach((z) => {
-  var grid = clickableGrid(4,4,function(el,row,col,i){
-    console.log(`(x,y,z) = (${row+1},${col+1},${z+1})`)
-    var event = new CustomEvent('tile-click', { detail: {
-      x: row, y: col, z: z}
+[0, 1, 2, 3].forEach((z) => {
+  var grid = clickableGrid(4, 4, function(el, row, col, i) {
+    console.log(`(x,y,z) = (${row + 1},${col + 1},${z + 1})`)
+    var event = new CustomEvent('tile-click', {
+      detail: {
+        x: row, y: col, z: z
+      }
     });
     window.dispatchEvent(event);
   });
@@ -343,7 +347,7 @@ document.body.appendChild(boardDiv);
 
   var gridLabel = document.createElement('p')
   gridLabel.className = "grid-label"
-  gridLabel.innerHTML = `Layer ${z+1}`
+  gridLabel.innerHTML = `Layer ${z + 1}`
   gridDiv.appendChild(gridLabel)
 
   boardDiv.appendChild(gridDiv);
@@ -353,19 +357,19 @@ document.body.appendChild(boardDiv);
 const player1 = humanUIPlayer(window, 1)
 const player2 = randomPlayer(2)
 
-loop(new Game(player1, player2), 
-      (g: Game) => {
-        // g.board.print()
+loop(new Game(player1, player2),
+  (g: Game) => {
+    // g.board.print()
 
-      }, 
-      (s: GameEndState, g: Game) => {
-        g.board.print()
-        if (player1.onGameEnd) player1.onGameEnd(s, g)
-        if (player2.onGameEnd) player2.onGameEnd(s ,g)
-        // hack in order to allow the 'move-place' event to fire first.
-        setTimeout(()=>
-          alert(`${g.currentPlayer.name} wins!`), 100)
-      })
+  },
+  (s: GameEndState, g: Game) => {
+    g.board.print()
+    if (player1.onGameEnd) player1.onGameEnd(s, g)
+    if (player2.onGameEnd) player2.onGameEnd(s, g)
+    // hack in order to allow the 'move-place' event to fire first.
+    setTimeout(() =>
+      alert(`${g.currentPlayer.name} wins!`), 100)
+  })
 
 window.addEventListener('move-place', (event: CustomEventInit) => {
   const d = event.detail
