@@ -269,6 +269,9 @@ function isPositiveInteger(str: string) {
       const point = new Point([p.x, p.y, p.z])
       window.removeEventListener('tile-click', handler)
       if (point.isValid() && b.get(point) == 0) {
+        window.dispatchEvent(new CustomEvent('move-place', {detail:
+          {x:p.x, y:p.y, z:p.z, n:num}
+        }))
         inputCallback(point)
       } else {
         alert("Invalid Move!")
@@ -289,7 +292,11 @@ function getRandomInt(min: number, max:number) {
  function randomPlayer(num: 1 | 2, name?: string): Player {
   function getMove(b: Board, inputCallback: ReadPointFunction): void {
     const unset = b.getUnsetPoints()
-    inputCallback( unset[getRandomInt(0, unset.length)] )
+    const p = unset[getRandomInt(0, unset.length)]
+    window.dispatchEvent(new CustomEvent('move-place', {detail:
+      {x:p.x, y:p.y, z:p.z, n:num}
+    }))
+    inputCallback( p )
   }
   return new Player(getMove, num, name)
 }
@@ -309,6 +316,7 @@ function clickableGrid(rows: number, cols: number,
     for (var c=0;c<cols;++c){
       var cell = tr.appendChild(document.createElement('td'));
       // cell.innerHTML = (++i).toString();
+      cell.className = `cell-${r}-${c}`
       cell.addEventListener('click',(function(el,r,c,i){
         return function(){ callback(el,r,c,i); }
        })(cell,r,c,i),false);
@@ -354,4 +362,16 @@ loop(new Game(player1, player2),
         g.board.print()
         if (player1.onGameEnd) player1.onGameEnd(s, g)
         if (player2.onGameEnd) player2.onGameEnd(s ,g)
+        // hack in order to allow the 'move-place' event to fire first.
+        setTimeout(()=>
+          alert(`${g.currentPlayer.name} wins!`), 100)
       })
+
+window.addEventListener('move-place', (event: CustomEventInit) => {
+  const d = event.detail
+  const layerClass = `layer-${d.z}`
+  const cellClass = `cell-${d.x}-${d.y}`
+  const layer = document.getElementsByClassName(layerClass)
+  const cell = layer[0].getElementsByClassName(cellClass)[0]
+  cell.innerHTML = d.n.toString()
+})
