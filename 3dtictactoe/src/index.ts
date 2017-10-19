@@ -1,5 +1,5 @@
 
-import { Game, loop, Board, GameEndState } from './game'
+import { Game, loop, Board, GameEndState, Point} from './game'
 import { humanTerminalPlayer, randomPlayer, minimaxPlayer } from './players'
 import * as readline from 'readline'
 
@@ -19,7 +19,7 @@ var aggregator = [0,0,0]
 
 function run(){
   loop(new Game(player1, player2),
-    (g: Game) => {
+    (g: Game, p: Point) => {
       // g.board.print()
     },
     (s: GameEndState, g: Game) => {

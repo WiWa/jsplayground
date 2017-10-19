@@ -1,10 +1,10 @@
 
-type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
+export type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
 type Line = Tile[]
 type Layer = Line[]
-type Coordinates = [number, number, number]
+export type Coordinates = [number, number, number]
 
-class Point {
+export class Point {
   x: number
   y: number
   z: number
@@ -45,9 +45,9 @@ class Point {
     return true
   }
 }
-type Action = Point
+export type Action = Point
 
-interface GameEndState {
+export interface GameEndState {
   tie: boolean
   winner: Player
   loser: Player
@@ -86,14 +86,14 @@ const directionslist: [Direction, Point][] = [
 const directions = new Map<Direction, Point>(directionslist)
 
 
-function getLine(p: Point, step: Point): Point[] {
+export function getLine(p: Point, step: Point): Point[] {
   var points = [-3, -2, -1, 1, 2, 3].map(i => p.add(step.multiply(i)))
     .filter(newp => newp.isValid())
   points.push(p)
   return points
 }
 
-class Board {
+export class Board {
   tiles: Layer[]
   constructor() {
     function line(): Line { return [0, 0, 0, 0] }
@@ -180,10 +180,10 @@ class Board {
   }
 }
 
-type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
-type ReadPointFunction = (x: Point) => void
+export type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
+export type ReadPointFunction = (x: Point) => void
 
-class Player {
+export class Player {
   constructor(public getMove: GetMoveFunction,
     public num: 1 | 2, public name?: string,
     public onGameEnd?: (s: GameEndState, g: Game) => void, ) {
@@ -193,7 +193,7 @@ class Player {
   }
 }
 
-class Game {
+export class Game {
   done: boolean;
   winningPlayer: Player | null;
 
@@ -263,9 +263,9 @@ function win(game: Game, winningLine: Point[]): GameEndState {
     winningLine: winningLine
   }
 }
-type UpdateCallback = (g: Game, p:Point) => void
+type UpdateCallback = (g: Game, p: Point) => void
 type FinishedCallback = (s: GameEndState, g: Game) => void
-function loop(game: Game,
+export function loop(game: Game,
   updateCb: UpdateCallback,
   finishedCb: FinishedCallback): void {
 
