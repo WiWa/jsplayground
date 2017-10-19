@@ -1,5 +1,5 @@
 node_modules
 package_lock.json
-*.js
-*.js.map
+builtJs
+bundle.js*
 game.js
