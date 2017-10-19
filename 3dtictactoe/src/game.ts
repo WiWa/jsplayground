@@ -109,11 +109,6 @@ export class Board {
       }
     }
   }
-  copy(): Board {
-    var b = new Board()
-    b.forEachPoint((x,y,z,) => b.tiles[x][y][z] = this.getXYZ(x,y,z))
-    return b
-  }
   get(pt: Point): Tile {
     return this.getXYZ(pt.x, pt.y, pt.z)
   }
@@ -204,18 +199,17 @@ export class Game {
       this.winningPlayer = null;
     }
 
-  copy(): Game {
-    var g = new Game(this.currentPlayer, this.opponent, this.board.copy())
-    g.done = this.done
-    g.winningPlayer = this.winningPlayer
-    return g
-  }
-
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
     this.board.set(this.currentPlayer, move)
     if (this.board.isFull()) {this.done = true}
+    return this
+  }
+  reverseMove(move: Point): Game {
+    this.board.tiles[move.x][move.y][move.z] = 0
+    this.done = false
+    this.winningPlayer = null
     return this
   }
 
