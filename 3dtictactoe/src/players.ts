@@ -1,5 +1,5 @@
 
-import { Game, Player, loop, Point, Board, ReadPointFunction } from './game'
+import { Game, Player, loop, Point, Board, ReadPointFunction, Tile} from './game'
 import {runminimax} from './minimax'
 import * as readline from 'readline'
 
@@ -31,10 +31,12 @@ export function humanTerminalPlayer(rl: readline.ReadLine, num: 1 | 2, name?: st
 export function humanUIPlayer(window: Window,
   num: 1 | 2, name?: string): Player {
   function getMoveFromUI(g: Game, inputCallback: ReadPointFunction): void {
-    window.addEventListener('tile-click', (event: CustomEventInit) => {
+    var handler = (event: CustomEventInit) => {
       const p = event.detail
+      window.removeEventListener('tile-click', handler)
       inputCallback(new Point([p.x, p.y, p.z]))
-    })
+    }
+    window.addEventListener('tile-click', handler)
   }
   return new Player(getMoveFromUI, num, name)
 }

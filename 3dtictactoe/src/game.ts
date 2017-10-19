@@ -1,5 +1,5 @@
 
-type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
+export type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
 type Line = Tile[]
 type Layer = Line[]
 export type Coordinates = [number, number, number]
@@ -161,20 +161,22 @@ export class Board {
   }
   print(): void {
     const horizontals = Array(65).fill("-").join("")
-    process.stdout.write("\n")
-    for (var y of [0, 1, 2, 3]) {
-      process.stdout.write("[ ")
+    console.log()
+    for (var x of [0, 1, 2, 3]) {
+      var line = ""
+      line += ("[ ")
       for (var z of [0, 1, 2, 3]) {
-        for (var x of [0, 1, 2, 3]) {
-          process.stdout.write(this.getXYZ(x, y, z).toString())
-          if (x < 3) process.stdout.write(" | ")
+        for (var y of [0, 1, 2, 3]) {
+          line += (this.getXYZ(x, y, z).toString())
+          if (y < 3) line += (" | ")
         }
-        if (z < 3) process.stdout.write("  :  ")
+        if (z < 3) line += ("  :  ")
       }
-      process.stdout.write(" ]\n")
-      if (y < 3) process.stdout.write(`${horizontals}\n`)
+      line += (" ]\n")
+      if (x < 3) line += (`${horizontals}`)
+      console.log(line)
     }
-    process.stdout.write("\n")
+    console.log()
   }
 }
 
@@ -261,7 +263,7 @@ function win(game: Game, winningLine: Point[]): GameEndState {
     winningLine: winningLine
   }
 }
-type UpdateCallback = (g: Game) => void
+type UpdateCallback = (g: Game, p: Point) => void
 type FinishedCallback = (s: GameEndState, g: Game) => void
 export function loop(game: Game,
   updateCb: UpdateCallback,
@@ -278,7 +280,7 @@ export function loop(game: Game,
       } else {
 
         game.makeMove(move)
-        updateCb(game)
+        updateCb(game, move)
 
         var [won, line] = game.wasWonBy(move)
         if (won) {

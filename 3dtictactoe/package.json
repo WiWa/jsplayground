@@ -4,17 +4,20 @@
   "description": "3D Tic-Tac-Toe",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register ./src/node_target/gametest.ts"
+    "test": "mocha -r ts-node/register ./src/gametest.ts"
   },
   "author": "Win Wang",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.43",
+    "awesome-typescript-loader": "^3.2.3",
     "chai": "^4.1.2",
     "mocha": "^4.0.1",
+    "source-map-loader": "^0.2.2",
     "ts-node": "^3.3.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "webpack": "^3.8.1"
   },
   "dependencies": {
     "@types/node": "^8.0.44",

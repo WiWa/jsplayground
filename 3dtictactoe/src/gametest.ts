@@ -1,7 +1,5 @@
-
-import * as G from './game'
-
-import { getLine, Point, Game, Board, GameEndState, loop } from './game'
+import { getLine, Point, Game, Board, 
+          GameEndState, loop, Coordinates } from './game'
 
 import { randomPlayer } from './players'
 
@@ -9,12 +7,12 @@ import { assert } from 'chai'
 
 describe('Get Line', () => {
   it('should get the right lines', () => {
-    var input: G.Coordinates[][] = [
+    var input: Coordinates[][] = [
       [[1, 1, 1], [1, 1, 1]],
       [[1, 1, 1], [1, 1, -1]],
       [[3, 3, 3], [1, 1, -1]]
     ]
-    var expectedpoints: G.Coordinates[][] = [
+    var expectedpoints: Coordinates[][] = [
       [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]],
       [[1, 1, 1], [2, 2, 0], [0, 0, 2]],
       [[3, 3, 3]]
