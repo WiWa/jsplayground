@@ -45,6 +45,7 @@ export class Point {
     return true
   }
 }
+export type Action = Point
 
 export interface GameEndState {
   tie: boolean
@@ -99,6 +100,20 @@ export class Board {
     function layer(): Layer { return [line(), line(), line(), line()] }
     this.tiles = [layer(), layer(), layer(), layer()]
   }
+  forEachPoint(f: (x:number,y:number,z:number) => void){
+    for (var x of [0, 1, 2, 3]) {
+      for (var y of [0, 1, 2, 3]) {
+        for (var z of [0, 1, 2, 3]) {
+          f(x,y,z)
+        }
+      }
+    }
+  }
+  copy(): Board {
+    var b = new Board()
+    b.forEachPoint((x,y,z,) => b.tiles[x][y][z] = this.getXYZ(x,y,z))
+    return b
+  }
   get(pt: Point): Tile {
     return this.getXYZ(pt.x, pt.y, pt.z)
   }
@@ -113,13 +128,7 @@ export class Board {
   }
   getAllPoints(): Point[] {
     var points: Point[] = []
-    for (var x of [0, 1, 2, 3]) {
-      for (var y of [0, 1, 2, 3]) {
-        for (var z of [0, 1, 2, 3]) {
-          points.push(new Point([x, y, z]))
-        }
-      }
-    }
+    this.forEachPoint((x,y,z) => points.push(new Point([x, y, z])))
     return points
   }
   getUnsetPoints(): Point[] {
@@ -144,7 +153,7 @@ export class Board {
   }
 }
 
-export type GetMoveFunction = (b: Board, cb: ReadPointFunction) => void
+export type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
 export type ReadPointFunction = (x: Point) => void
 
 export class Player {
@@ -158,14 +167,28 @@ export class Player {
 }
 
 export class Game {
+  done: boolean;
+  winningPlayer: Player | null;
+
   constructor(public currentPlayer: Player,
     public opponent: Player,
-    public board: Board = new Board()) { }
+    public board: Board = new Board()) { 
+      this.done = false;
+      this.winningPlayer = null;
+    }
+
+  copy(): Game {
+    var g = new Game(this.currentPlayer, this.opponent, this.board.copy())
+    g.done = this.done
+    g.winningPlayer = this.winningPlayer
+    return g
+  }
 
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
       `${this.currentPlayer.name} tried to set already-set tile at ${move.xyz()}!`)
     this.board.set(this.currentPlayer, move)
+    if (this.board.isFull()) {this.done = true}
     return this
   }
 
@@ -179,6 +202,8 @@ export class Game {
       if (inarow.length == 4) {
         won = true
         winningline = inarow
+        this.done = true
+        this.winningPlayer = this.currentPlayer
       }
     })
     return [won, winningline]
@@ -219,7 +244,7 @@ export function loop(game: Game,
 
   if (game.board.isFull()) finishedCb(tie(game), game)
 
-  game.currentPlayer.getMove(game.board,
+  game.currentPlayer.getMove(game,
     (move) => {
 
       if (!move.isValid()) {
