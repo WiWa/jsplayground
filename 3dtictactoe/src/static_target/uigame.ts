@@ -107,6 +107,20 @@ class Board {
     function layer(): Layer { return [line(), line(), line(), line()] }
     this.tiles = [layer(), layer(), layer(), layer()]
   }
+  forEachPoint(f: (x:number,y:number,z:number) => void){
+    for (var x of [0, 1, 2, 3]) {
+      for (var y of [0, 1, 2, 3]) {
+        for (var z of [0, 1, 2, 3]) {
+          f(x,y,z)
+        }
+      }
+    }
+  }
+  copy(): Board {
+    var b = new Board()
+    b.forEachPoint((x,y,z,) => b.tiles[x][y][z] = this.getXYZ(x,y,z))
+    return b
+  }
   get(pt: Point): Tile {
     return this.getXYZ(pt.x, pt.y, pt.z)
   }
@@ -133,6 +147,31 @@ class Board {
   getUnsetPoints(): Point[] {
     return this.getAllPoints().filter((p) => this.get(p) == 0)
   }
+  getAllWinnableLines(): Point[][] {
+    var lines: Point[][] = []
+    // Should correspond direcly to Directions
+    // +/- vary <-> +/- 1
+    // a, b <-> 0
+    for (var a of [0,1,2,3]){
+      for (var b of [0,1,2,3]){
+        lines.push([0,1,2,3].map((vary) => new Point([vary,a,b])))
+        lines.push([0,1,2,3].map((vary) => new Point([a,vary,b])))
+        lines.push([0,1,2,3].map((vary) => new Point([a,b,vary])))
+      }
+      lines.push([0,1,2,3].map((vary) => new Point([vary,vary,a])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,3-vary,a])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,a,vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,a,3-vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([a,vary,vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([a,vary,3-vary])))
+    }
+    lines.push([0,1,2,3].map((vary) => new Point([vary,vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([3-vary,vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([vary,3-vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([vary,vary,3-vary])))
+
+    return lines
+  }
   print(): void {
     const horizontals = Array(65).fill("-").join("")
     console.log()
@@ -154,7 +193,7 @@ class Board {
   }
 }
 
-type GetMoveFunction = (b: Board, cb: ReadPointFunction) => void
+type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
 type ReadPointFunction = (x: Point) => void
 
 class Player {
@@ -168,9 +207,22 @@ class Player {
 }
 
 class Game {
+  done: boolean;
+  winningPlayer: Player | null;
+
   constructor(public currentPlayer: Player,
     public opponent: Player,
-    public board: Board = new Board()) { }
+    public board: Board = new Board()) { 
+      this.done = false;
+      this.winningPlayer = null;
+    }
+
+  copy(): Game {
+    var g = new Game(this.currentPlayer, this.opponent, this.board.copy())
+    g.done = this.done
+    g.winningPlayer = this.winningPlayer
+    return g
+  }
 
   makeMove(move: Point): Game {
     if (this.board.get(move) != 0) throw new Error(
@@ -230,7 +282,7 @@ function loop(game: Game,
 
   if (game.board.isFull()) finishedCb(tie(game), game)
 
-  game.currentPlayer.getMove(game.board,
+  game.currentPlayer.getMove(game,
     (move) => {
 
       if (!move.isValid()) {
@@ -263,12 +315,12 @@ function isPositiveInteger(str: string) {
 
 function humanUIPlayer(window: Window,
   num: 1 | 2, name?: string): Player {
-  function getMoveFromUI(b: Board, inputCallback: ReadPointFunction): void {
+  function getMoveFromUI(g: Game, inputCallback: ReadPointFunction): void {
     const handler = (event: CustomEventInit) => {
       const p = event.detail
       const point = new Point([p.x, p.y, p.z])
       window.removeEventListener('tile-click', handler)
-      if (point.isValid() && b.get(point) == 0) {
+      if (point.isValid() && g.board.get(point) == 0) {
         window.dispatchEvent(new CustomEvent('move-place', {
           detail:
           { x: p.x, y: p.y, z: p.z, n: num }
@@ -276,7 +328,7 @@ function humanUIPlayer(window: Window,
         inputCallback(point)
       } else {
         alert("Invalid Move!")
-        getMoveFromUI(b, inputCallback)
+        getMoveFromUI(g, inputCallback)
       }
     }
     window.addEventListener('tile-click', handler)
@@ -291,14 +343,82 @@ function getRandomInt(min: number, max: number) {
 }
 
 function randomPlayer(num: 1 | 2, name?: string): Player {
-  function getMove(b: Board, inputCallback: ReadPointFunction): void {
-    const unset = b.getUnsetPoints()
+  function getMove(g: Game, inputCallback: ReadPointFunction): void {
+    const unset = g.board.getUnsetPoints()
     const p = unset[getRandomInt(0, unset.length)]
     window.dispatchEvent(new CustomEvent('move-place', {
       detail:
       { x: p.x, y: p.y, z: p.z, n: num }
     }))
     inputCallback(p)
+  }
+  return new Player(getMove, num, name)
+}
+
+function minimaxPlayer(num: 1 | 2, depth: number = 1,
+                              drunkenness: number = 0,
+                              name?: string): Player {
+  const fallback: Player = randomPlayer(num, name)
+
+  function toTiles(b:Board, line: Point[]): Tile[] {
+    return line.map((p) => b.get(p))
+  }
+
+  function heuristic(g: Game): number {
+    if (g.done){
+      if (g.winningPlayer == null) return 0
+      if (g.winningPlayer.num != num) return Number.MAX_SAFE_INTEGER // we won; '!=' is because we swapped players 
+      return Number.MIN_SAFE_INTEGER
+    }
+
+    const winningLines = g.board.getAllWinnableLines()
+
+    var score = 0
+    winningLines.forEach((line) => {
+      var tiles = toTiles(g.board, line)
+      var unsetTiles = tiles.filter((t) => t == 0).length
+      var myTiles = tiles.filter((t) => t == num).length
+      var oppTiles = 4 - myTiles - unsetTiles
+
+      // bad score only if I didn't block opponent
+      // prioritize lines with more opponent tiles 
+      if (oppTiles > 0){
+        if (myTiles == 0){
+          score -= Math.pow(100, oppTiles)
+        }
+      }
+      else {
+        score += Math.pow(90, myTiles)
+      }
+    })
+    
+    return score
+  }
+
+  function possibleMoves(g: Game) {
+    return g.board.getUnsetPoints()
+  }
+  function isDone(g: Game) {
+    return g.done
+  }
+  function getMove(g: Game, inputCallback: ReadPointFunction): void {
+    console.log('wtf')
+    if (Math.random() < drunkenness) {
+      fallback.getMove(g, inputCallback)
+      return
+    }
+    const [p, value] = runminimax(g, possibleMoves, isDone, 
+                                        heuristic, depth, true)
+    if (p != null) {
+      window.dispatchEvent(new CustomEvent('move-place', {
+        detail:
+        { x: p.x, y: p.y, z: p.z, n: num }
+      }))
+      inputCallback(p)
+    }
+    else {
+      fallback.getMove(g, inputCallback)
+    }
   }
   return new Player(getMove, num, name)
 }
@@ -355,7 +475,7 @@ document.body.appendChild(boardDiv);
 
 
 const player1 = humanUIPlayer(window, 1)
-const player2 = randomPlayer(2)
+const player2 = minimaxPlayer(2)
 
 loop(new Game(player1, player2),
   (g: Game) => {
