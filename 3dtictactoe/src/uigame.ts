@@ -27,9 +27,12 @@ function clickableGrid(rows: number, cols: number,
   return grid;
 }
 
+const gameDiv = document.getElementById("gameDiv");
 const boardDiv = document.createElement('div');
 boardDiv.id = "boardDiv";
-document.body.appendChild(boardDiv);
+if (gameDiv) gameDiv.appendChild(boardDiv);
+else throw new Error("No #gameDiv!");
+
 
 [0, 1, 2, 3].forEach((z) => {
   var grid = clickableGrid(4, 4, function(el, row, col, i) {
