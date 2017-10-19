@@ -4,7 +4,7 @@
   "description": "3D Tic-Tac-Toe",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register ./gametest.ts"
+    "test": "mocha -r ts-node/register ./src/node_target/gametest.ts"
   },
   "author": "Win Wang",
   "license": "ISC",

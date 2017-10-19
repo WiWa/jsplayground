@@ -134,6 +134,31 @@ export class Board {
   getUnsetPoints(): Point[] {
     return this.getAllPoints().filter((p) => this.get(p) == 0)
   }
+  getAllWinnableLines(): Point[][] {
+    var lines: Point[][] = []
+    // Should correspond direcly to Directions
+    // +/- vary <-> +/- 1
+    // a, b <-> 0
+    for (var a of [0,1,2,3]){
+      for (var b of [0,1,2,3]){
+        lines.push([0,1,2,3].map((vary) => new Point([vary,a,b])))
+        lines.push([0,1,2,3].map((vary) => new Point([a,vary,b])))
+        lines.push([0,1,2,3].map((vary) => new Point([a,b,vary])))
+      }
+      lines.push([0,1,2,3].map((vary) => new Point([vary,vary,a])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,3-vary,a])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,a,vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([vary,a,3-vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([a,vary,vary])))
+      lines.push([0,1,2,3].map((vary) => new Point([a,vary,3-vary])))
+    }
+    lines.push([0,1,2,3].map((vary) => new Point([vary,vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([3-vary,vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([vary,3-vary,vary])))
+    lines.push([0,1,2,3].map((vary) => new Point([vary,vary,3-vary])))
+
+    return lines
+  }
   print(): void {
     const horizontals = Array(65).fill("-").join("")
     process.stdout.write("\n")

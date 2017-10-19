@@ -12,8 +12,8 @@ const rl = readline.createInterface({
 // const player1 = humanTerminalPlayer(rl, 1)
 // const player2 = humanTerminalPlayer(rl, 2)
 // const player1 = randomPlayer(1)
-const player1 = minimaxPlayer(1)
-const player2 = randomPlayer(2)
+const player1 = minimaxPlayer(1, 1, 0.1)
+const player2 = minimaxPlayer(2)
 
 var aggregator = [0,0,0]
 
@@ -31,6 +31,5 @@ function run(){
       rl.close()
     })
 }
-Array(100).fill(0).forEach((i) => run())
-
+Array(10).fill(0).forEach((i) => run())
 console.log(aggregator)

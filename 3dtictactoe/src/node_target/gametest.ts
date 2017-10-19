@@ -1,7 +1,7 @@
 
 import * as G from './game'
 
-import { getLine, Point, Game, GameEndState, loop } from './game'
+import { getLine, Point, Game, Board, GameEndState, loop } from './game'
 
 import { randomPlayer } from './players'
 
@@ -37,6 +37,12 @@ describe("Manhattan Distance", () => {
     var b = new Point([2, 2, 1])
     assert.equal(a.manDist(b), 4)
     assert.equal(a.manDist(a), 0)
+  })
+})
+
+describe("Number of winning lines", () => {
+  it("should be 76", () => {
+    assert.equal(new Board().getAllWinnableLines().length, 76)
   })
 })
 
