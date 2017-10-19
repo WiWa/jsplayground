@@ -2,9 +2,9 @@
 type Tile = 0 | 1 | 2 // empty, player 1's, or player 2's tile
 type Line = Tile[]
 type Layer = Line[]
-export type Coordinates = [number, number, number]
+type Coordinates = [number, number, number]
 
-export class Point {
+class Point {
   x: number
   y: number
   z: number
@@ -45,9 +45,9 @@ export class Point {
     return true
   }
 }
-export type Action = Point
+type Action = Point
 
-export interface GameEndState {
+interface GameEndState {
   tie: boolean
   winner: Player
   loser: Player
@@ -86,14 +86,14 @@ const directionslist: [Direction, Point][] = [
 const directions = new Map<Direction, Point>(directionslist)
 
 
-export function getLine(p: Point, step: Point): Point[] {
+function getLine(p: Point, step: Point): Point[] {
   var points = [-3, -2, -1, 1, 2, 3].map(i => p.add(step.multiply(i)))
     .filter(newp => newp.isValid())
   points.push(p)
   return points
 }
 
-export class Board {
+class Board {
   tiles: Layer[]
   constructor() {
     function line(): Line { return [0, 0, 0, 0] }
@@ -180,10 +180,10 @@ export class Board {
   }
 }
 
-export type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
-export type ReadPointFunction = (x: Point) => void
+type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
+type ReadPointFunction = (x: Point) => void
 
-export class Player {
+class Player {
   constructor(public getMove: GetMoveFunction,
     public num: 1 | 2, public name?: string,
     public onGameEnd?: (s: GameEndState, g: Game) => void, ) {
@@ -193,7 +193,7 @@ export class Player {
   }
 }
 
-export class Game {
+class Game {
   done: boolean;
   winningPlayer: Player | null;
 
@@ -263,9 +263,9 @@ function win(game: Game, winningLine: Point[]): GameEndState {
     winningLine: winningLine
   }
 }
-type UpdateCallback = (g: Game) => void
+type UpdateCallback = (g: Game, p:Point) => void
 type FinishedCallback = (s: GameEndState, g: Game) => void
-export function loop(game: Game,
+function loop(game: Game,
   updateCb: UpdateCallback,
   finishedCb: FinishedCallback): void {
 
@@ -280,7 +280,7 @@ export function loop(game: Game,
       } else {
 
         game.makeMove(move)
-        updateCb(game)
+        updateCb(game, move)
 
         var [won, line] = game.wasWonBy(move)
         if (won) {
