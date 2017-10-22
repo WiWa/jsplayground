@@ -24,7 +24,7 @@ function clickableGrid(rows: number, cols: number,
     for (var c = 0; c < cols; ++c) {
       var cell = tr.appendChild(document.createElement('td'));
       // cell.innerHTML = (++i).toString();
-      cell.className = `cell-${r}-${c}`
+      cell.className = `cell-${r}-${c} cell clickable`
       cell.addEventListener('click', (function(el, r, c, i) {
         return function() { callback(el, r, c, i); }
       })(cell, r, c, i), false);
@@ -85,8 +85,9 @@ function playerSymbol(n: PlayerNumber) {
 
 movePlaceObs.subscribe(({x, y, z, n}) => {
   const layerClass = `layer-${z}`
-  const cellClass = `cell-${x}-${y}`
+  const cellClass = `cell-${x}-${y} cell`
   const layer = document.getElementsByClassName(layerClass)
   const cell = layer[0].getElementsByClassName(cellClass)[0]
+  cell.className = cellClass // remove ".clickable"
   cell.innerHTML = symbolSpan(playerSymbol(n))
 })
