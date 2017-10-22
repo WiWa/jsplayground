@@ -178,9 +178,10 @@ export class Board {
 export type GetMoveFunction = (g: Game, cb: ReadPointFunction) => void
 export type ReadPointFunction = (x: Point) => void
 
+export type PlayerNumber = 1 | 2
 export class Player {
   constructor(public getMove: GetMoveFunction,
-    public num: 1 | 2, public name?: string,
+    public num: PlayerNumber, public name?: string,
     public onGameEnd?: (s: GameEndState, g: Game) => void, ) {
     if (name == null) {
       this.name = `Player ${num}`

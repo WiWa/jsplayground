@@ -2,12 +2,12 @@
 // https://stackoverflow.com/questions/9140101/creating-a-clickable-grid-in-a-web-browser
 
 import {Player, Game, loop, ReadPointFunction, 
-        Board, Point, GameEndState, Tile } from './game'
+        Board, Point, GameEndState, Tile, PlayerNumber } from './game'
 import {humanUIPlayer, randomPlayer, minimaxPlayer} from './players'
 import ObsLite from './obslite'
 
 
-type Move = {x:number, y:number, z:number, n:number}
+type Move = {x:number, y:number, z:number, n:1|2}
 const tileClickObs = new ObsLite<Point>('tile-click')
 const movePlaceObs = new ObsLite<Move>('move-place')
 
@@ -43,12 +43,6 @@ else throw new Error("No #gameDiv!");
 [0, 1, 2, 3].forEach((z) => {
   var grid = clickableGrid(4, 4, function(el, row, col, i) {
     console.log(`(x,y,z) = (${row + 1},${col + 1},${z + 1})`)
-    // var event = new CustomEvent('tile-click', {
-    //   detail: {
-    //     x: row, y: col, z: z
-    //   }
-    // });
-    // window.dispatchEvent(event);
     tileClickObs.emit(new Point([row,col,z]))
   });
   var gridDiv = document.createElement('div');
@@ -69,10 +63,6 @@ const player2 = minimaxPlayer(2)
 loop(new Game(player1, player2),
   (g: Game, p: Point) => {
     // g.board.print()
-    // window.dispatchEvent(new CustomEvent('move-place', {
-    //   detail:
-    //   { x: p.x, y: p.y, z: p.z, n: g.currentPlayer.num }
-    // }))
     movePlaceObs.emit({ x: p.x, y: p.y, z: p.z, n: g.currentPlayer.num })
   },
   (s: GameEndState, g: Game) => {
@@ -83,12 +73,20 @@ loop(new Game(player1, player2),
     setTimeout(() =>
       alert(`${g.currentPlayer.name} wins!`), 100)
   })
+function symbolSpan(s: String) {
+  return `<span class="player-symbol-${s}">${s}</span>`
+}
+function playerSymbol(n: PlayerNumber) {
+  switch (n) {
+    case 1: return "X"
+    case 2: return "O"
+  }
+}
 
-// window.addEventListener('move-place', (event: CustomEventInit) => {
 movePlaceObs.subscribe(({x, y, z, n}) => {
   const layerClass = `layer-${z}`
   const cellClass = `cell-${x}-${y}`
   const layer = document.getElementsByClassName(layerClass)
   const cell = layer[0].getElementsByClassName(cellClass)[0]
-  cell.innerHTML = n.toString()
+  cell.innerHTML = symbolSpan(playerSymbol(n))
 })
