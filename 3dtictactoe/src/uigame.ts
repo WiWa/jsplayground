@@ -4,6 +4,12 @@
 import {Player, Game, loop, ReadPointFunction, 
         Board, Point, GameEndState, Tile } from './game'
 import {humanUIPlayer, randomPlayer, minimaxPlayer} from './players'
+import ObsLite from './obslite'
+
+
+type Move = {x:number, y:number, z:number, n:number}
+const tileClickObs = new ObsLite<Point>('tile-click')
+const movePlaceObs = new ObsLite<Move>('move-place')
 
 type EventListenerCallback = (el: HTMLElement,
   row: number, col: number, i: number) => void
@@ -37,12 +43,13 @@ else throw new Error("No #gameDiv!");
 [0, 1, 2, 3].forEach((z) => {
   var grid = clickableGrid(4, 4, function(el, row, col, i) {
     console.log(`(x,y,z) = (${row + 1},${col + 1},${z + 1})`)
-    var event = new CustomEvent('tile-click', {
-      detail: {
-        x: row, y: col, z: z
-      }
-    });
-    window.dispatchEvent(event);
+    // var event = new CustomEvent('tile-click', {
+    //   detail: {
+    //     x: row, y: col, z: z
+    //   }
+    // });
+    // window.dispatchEvent(event);
+    tileClickObs.emit(new Point([row,col,z]))
   });
   var gridDiv = document.createElement('div');
   gridDiv.className = `gridDiv layer-${z}`
@@ -56,17 +63,17 @@ else throw new Error("No #gameDiv!");
   boardDiv.appendChild(gridDiv);
 })
 
-
-const player1 = humanUIPlayer(window, 1)
+const player1 = humanUIPlayer(tileClickObs, 1)
 const player2 = minimaxPlayer(2)
 
 loop(new Game(player1, player2),
   (g: Game, p: Point) => {
     // g.board.print()
-    window.dispatchEvent(new CustomEvent('move-place', {
-      detail:
-      { x: p.x, y: p.y, z: p.z, n: g.currentPlayer.num }
-    }))
+    // window.dispatchEvent(new CustomEvent('move-place', {
+    //   detail:
+    //   { x: p.x, y: p.y, z: p.z, n: g.currentPlayer.num }
+    // }))
+    movePlaceObs.emit({ x: p.x, y: p.y, z: p.z, n: g.currentPlayer.num })
   },
   (s: GameEndState, g: Game) => {
     g.board.print()
@@ -77,11 +84,11 @@ loop(new Game(player1, player2),
       alert(`${g.currentPlayer.name} wins!`), 100)
   })
 
-window.addEventListener('move-place', (event: CustomEventInit) => {
-  const d = event.detail
-  const layerClass = `layer-${d.z}`
-  const cellClass = `cell-${d.x}-${d.y}`
+// window.addEventListener('move-place', (event: CustomEventInit) => {
+movePlaceObs.subscribe(({x, y, z, n}) => {
+  const layerClass = `layer-${z}`
+  const cellClass = `cell-${x}-${y}`
   const layer = document.getElementsByClassName(layerClass)
   const cell = layer[0].getElementsByClassName(cellClass)[0]
-  cell.innerHTML = d.n.toString()
+  cell.innerHTML = n.toString()
 })

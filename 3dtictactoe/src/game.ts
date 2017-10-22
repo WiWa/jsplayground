@@ -266,7 +266,7 @@ export function loop(game: Game,
   if (game.board.isFull()) finishedCb(tie(game), game)
 
   game.currentPlayer.getMove(game,
-    (move) => {
+    (move: Point) => {
 
       if (!move.isValid()) {
         console.log(`${move.xyz()} is not a valid move!`)

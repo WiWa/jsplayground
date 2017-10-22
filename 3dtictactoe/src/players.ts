@@ -1,6 +1,7 @@
 
 import { Game, Player, loop, Point, Board, ReadPointFunction, Tile} from './game'
 import {runminimax} from './minimax'
+import ObsLite from './obslite'
 import * as readline from 'readline'
 
 function isPositiveInteger(str: string) {
@@ -28,15 +29,16 @@ export function humanTerminalPlayer(rl: readline.ReadLine, num: 1 | 2, name?: st
   return new Player(getMoveFromTerminal, num, name)
 }
 
-export function humanUIPlayer(window: Window,
+export function humanUIPlayer(tileClickObs: ObsLite<Point>,
   num: 1 | 2, name?: string): Player {
   function getMoveFromUI(g: Game, inputCallback: ReadPointFunction): void {
-    var handler = (event: CustomEventInit) => {
-      const p = event.detail
-      window.removeEventListener('tile-click', handler)
-      inputCallback(new Point([p.x, p.y, p.z]))
-    }
-    window.addEventListener('tile-click', handler)
+    // var handler = (event: CustomEventInit) => {
+    //   const p = event.detail
+    //   window.removeEventListener('tile-click', handler)
+    //   inputCallback(new Point([p.x, p.y, p.z]))
+    // }
+    // window.addEventListener('tile-click', handler)
+    tileClickObs.subscribeOnce((point) => inputCallback(point))
   }
   return new Player(getMoveFromUI, num, name)
 }

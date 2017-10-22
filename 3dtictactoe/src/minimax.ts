@@ -15,7 +15,7 @@ export function runminimax(g_: Game, getActions: (g: Game) => Action[],
 
     if (maxing) {
       var bestValue = Number.MIN_SAFE_INTEGER
-      var bestAct = null
+      var bestAct: null | Action = null
       for (var child of getActions(g)) {
         var [act, v] = minimax(g.makeMove(child).swapPlayers(), depth-1, false)
         g.reverseMove(child).swapPlayers()
@@ -26,7 +26,7 @@ export function runminimax(g_: Game, getActions: (g: Game) => Action[],
       }
     } else {
       var bestValue = Number.MAX_SAFE_INTEGER
-      var bestAct = null
+      var bestAct: null | Action = null
       for (var child of getActions(g)) {
         var [act, v] = minimax(g.makeMove(child).swapPlayers(), depth-1, true)
         g.reverseMove(child).swapPlayers()
