@@ -32,7 +32,10 @@ export function humanTerminalPlayer(rl: readline.ReadLine, num: 1 | 2, name?: st
 export function humanUIPlayer(tileClickObs: ObsLite<Point>,
   num: 1 | 2, name?: string): Player {
   function getMoveFromUI(g: Game, inputCallback: ReadPointFunction): void {
-    tileClickObs.subscribeOnce((point) => inputCallback(point))
+    tileClickObs.subscribeOnce((point) => {
+      if (g.board.get(point) == 0) inputCallback(point)
+      else getMoveFromUI(g, inputCallback)
+    })
   }
   return new Player(getMoveFromUI, num, name)
 }
